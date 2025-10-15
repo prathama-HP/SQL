@@ -1,49 +1,35 @@
--- Drop and recreate database if it exists
-IF DB_ID('DotNetCourseDatabase') IS NOT NULL
-    DROP DATABASE DotNetCourseDatabase;
+-- 1️⃣ Create database if it doesn't exist
+IF DB_ID('DotNetCourseDatabase') IS NULL
+BEGIN
+    CREATE DATABASE DotNetCourseDatabase;
+END
 GO
 
-CREATE DATABASE DotNetCourseDatabase;
-GO
-
+-- 2️⃣ Switch to the database
 USE DotNetCourseDatabase;
 GO
 
--- Create schema
-CREATE SCHEMA TutorialAppSchema;
+-- 3️⃣ Create schema if it doesn't exist
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'TutorialAppSchema')
+BEGIN
+    EXEC('CREATE SCHEMA TutorialAppSchema');
+END
 GO
 
--- Drop table if it already exists (safe rerun)
-DROP TABLE IF EXISTS TutorialAppSchema.Computer;
+-- 4️⃣ Create Computer table
+IF OBJECT_ID('TutorialAppSchema.Computer', 'U') IS NULL
+BEGIN
+    CREATE TABLE TutorialAppSchema.Computer (
+        ComputerId INT IDENTITY(1,1) PRIMARY KEY,
+        Motherboard NVARCHAR(50) NOT NULL,
+        HasWifi BIT NOT NULL,
+        HasLTE BIT NOT NULL,
+        ReleaseDate DATETIME NOT NULL,
+        Price DECIMAL(10,2) NOT NULL,
+        VideoCard NVARCHAR(50) NOT NULL
+    );
+END
 GO
 
--- Create table
-CREATE TABLE TutorialAppSchema.Computer
-(
-    ComputerID INT IDENTITY(1,1) PRIMARY KEY,
-    Motherboard NVARCHAR(255),
-    CPUCores INT,
-    HasWifi BIT,
-    HasLTE BIT,
-    Price DECIMAL(18,4),
-    VideoCard NVARCHAR(50)
-);
-GO
-
--- Insert sample data
-INSERT INTO TutorialAppSchema.Computer (Motherboard, CPUCores, HasWifi, HasLTE, Price, VideoCard)
-VALUES
-('ASUS B550', 8, 1, 0, 75000.00, 'NVIDIA RTX 4060'),
-('Gigabyte X570', 12, 1, 1, 120000.00, 'AMD Radeon RX 7900'),
-('MSI B450', 6, 1, 0, 55000.00, 'NVIDIA GTX 1660');
-GO
-
--- View data
-SELECT * FROM TutorialAppSchema.Computer;
-
-INSERT INTO TutorialAppSchema.Computer 
-(Motherboard, CPUCores, HasWifi, HasLTE, Price, VideoCard)
-VALUES
-('ASRock Z790', 16, 1, 1, 150000.00, 'NVIDIA RTX 4090');
-
+-- 5️⃣ Optional: Verify table creation
 SELECT * FROM TutorialAppSchema.Computer;
